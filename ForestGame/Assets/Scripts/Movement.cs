@@ -32,7 +32,7 @@ public class Movement : MonoBehaviour
     private float dirX;
 
     private readonly float moveSpeed = 7f;
-    private readonly float groundRadius = 0.1f;
+    private readonly float groundCollisionRadius = 0.1f;
     private readonly float fallMultiplier = 1.5f;
     private readonly float lowJumpMultilier = 1f;
     private readonly float jumpForce = 600f;
@@ -70,30 +70,34 @@ public class Movement : MonoBehaviour
                 M_RigidBody2D.velocity += Vector2.up * Physics2D.gravity.y * lowJumpMultilier * Time.deltaTime;
 
             dirX = Input.GetAxis("Horizontal") * moveSpeed;
-
-            animator.SetFloat("speed", Mathf.Abs(dirX));
         }
     }
 
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && OnGround && !Attack)
-        {
-            M_RigidBody2D.AddForce(new Vector2(0, jumpForce));
+        if (Input.GetKeyDown(KeyCode.Space) && !Attack)
             animator.SetTrigger("jump");
-        }
-
+        
         if (Input.GetKey(KeyCode.LeftShift) && OnGround && !Attack)
             animator.SetTrigger("attack");
     }
 
     private void HandleMovement()
     {
+        animator.SetFloat("speed", Mathf.Abs(dirX));
+
         if (M_RigidBody2D.velocity.y < 0)
             animator.SetBool("fall",true);
+
+        if(Jumping && OnGround)
+        {
+            M_RigidBody2D.AddForce(new Vector2(0, jumpForce));
+            animator.SetTrigger("jump");
+        }
           
         if(!Attack)
             M_RigidBody2D.velocity = new Vector2(dirX, M_RigidBody2D.velocity.y);
+
     }
 
     private bool IsGrounded()
@@ -101,7 +105,7 @@ public class Movement : MonoBehaviour
         if(M_RigidBody2D.velocity.y <= 0)
             foreach(Transform point in groundPoints)
             {
-                Collider2D[] colliders = Physics2D.OverlapCircleAll(point.position, groundRadius, groundType);
+                Collider2D[] colliders = Physics2D.OverlapCircleAll(point.position, groundCollisionRadius, groundType);
                 foreach (Collider2D collider in colliders)
                     if (collider.gameObject != gameObject)
                     {
