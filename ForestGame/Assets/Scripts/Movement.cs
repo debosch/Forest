@@ -20,7 +20,7 @@ public class Movement : MonoBehaviour
     public bool Walk { get; set; }
     public bool Fall { get; set; }
     public bool Dead { get; set; }
-    
+
 
     [SerializeField]
     private Transform[] groundPoints;
@@ -28,19 +28,20 @@ public class Movement : MonoBehaviour
     private LayerMask groundType;
 
     private Animator animator;
-    
+
     private float dirX;
 
-    private readonly float moveSpeed = 5f;
+    private readonly float moveSpeed = 7f;
     private readonly float groundRadius = 0.1f;
     private readonly float fallMultiplier = 1.5f;
     private readonly float lowJumpMultilier = 1f;
+    private readonly float jumpForce = 600f;
 
 
     private bool facingRight;
-  
+
     private void Start()
-    {
+    { 
         Dead = false;
         facingRight = true;
         animator = GetComponent<Animator>();
@@ -53,7 +54,8 @@ public class Movement : MonoBehaviour
         OnGround = IsGrounded();
         HandleMovement();
         HandleLayers();
-        Flip();
+        if(!Attack)
+            Flip();
     }
 
     private void Update()
@@ -75,21 +77,22 @@ public class Movement : MonoBehaviour
 
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            Jumping = true;
-        else if (Input.GetKeyUp(KeyCode.Space))
-            Jumping = false;
+        if (Input.GetKeyDown(KeyCode.Space) && OnGround && !Attack)
+        {
+            M_RigidBody2D.AddForce(new Vector2(0, jumpForce));
+            animator.SetTrigger("jump");
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift) && OnGround && !Attack)
+            animator.SetTrigger("attack");
     }
 
     private void HandleMovement()
     {
-        if(Jumping && M_RigidBody2D.velocity.y == 0)
-        {
-            M_RigidBody2D.velocity = Vector2.up * 6f;
-            animator.SetTrigger("jump");
-        }
-            
-        if(!Attack && !Jumping && OnGround)
+        if (M_RigidBody2D.velocity.y < 0)
+            animator.SetBool("fall",true);
+          
+        if(!Attack)
             M_RigidBody2D.velocity = new Vector2(dirX, M_RigidBody2D.velocity.y);
     }
 
@@ -99,9 +102,13 @@ public class Movement : MonoBehaviour
             foreach(Transform point in groundPoints)
             {
                 Collider2D[] colliders = Physics2D.OverlapCircleAll(point.position, groundRadius, groundType);
-                foreach(Collider2D collider in colliders)
+                foreach (Collider2D collider in colliders)
                     if (collider.gameObject != gameObject)
+                    {
+                        animator.SetBool("fall", false);
                         return true;
+                    }
+                        
             }
         return false;
     }
