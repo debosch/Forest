@@ -2,73 +2,100 @@
 using UnityEngine;
 public class Movement : MonoBehaviour
 {
-    private Rigidbody2D m_rigidbody2D;
+    private static Movement instance;
+    public static Movement Instance
+    {
+        get
+        {
+            if (instance == null)
+                instance = GameObject.FindObjectOfType<Movement>();
+            return instance;
+        }
+    }
+
+    public Rigidbody2D M_RigidBody2D { get; set; }
+    public bool OnGround { get; set; }
+    public bool Jumping { get; set; }
+    public bool Attack { get; set; }
+    public bool Walk { get; set; }
+    public bool Fall { get; set; }
+    public bool Dead { get; set; }
+    
+
     [SerializeField]
     private Transform[] groundPoints;
     [SerializeField]
     private LayerMask groundType;
 
-    private float moveSpeed = 3f;
+    private Animator animator;
+    
     private float dirX;
 
-    private readonly float groundRadius = 0.08f;
+    private readonly float moveSpeed = 5f;
+    private readonly float groundRadius = 0.1f;
     private readonly float fallMultiplier = 1.5f;
     private readonly float lowJumpMultilier = 1f;
 
-    private bool isGrounded;
+
     private bool facingRight;
   
     private void Start()
     {
+        Dead = false;
         facingRight = true;
-        m_rigidbody2D = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        M_RigidBody2D = GetComponent<Rigidbody2D>();
     }
 
 
     private void FixedUpdate()
     {
-        isGrounded = IsGrounded();
-        Move();
+        OnGround = IsGrounded();
+        HandleMovement();
+        HandleLayers();
         Flip();
     }
 
     private void Update()
     {
-        HandleInput();
+        if(!Dead)
+        {
+            HandleInput();
 
-        if (m_rigidbody2D.velocity.y < 0)
-            m_rigidbody2D.velocity += Vector2.up * Physics2D.gravity.y * fallMultiplier * Time.deltaTime;
-        else if (m_rigidbody2D.velocity.y > 0 && !Input.GetButton("Jump"))
-            m_rigidbody2D.velocity += Vector2.up * Physics2D.gravity.y * lowJumpMultilier * Time.deltaTime;
+            if (M_RigidBody2D.velocity.y < 0)
+                M_RigidBody2D.velocity += Vector2.up * Physics2D.gravity.y * fallMultiplier * Time.deltaTime;
+            else if (M_RigidBody2D.velocity.y > 0 && !Input.GetButton("Jump"))
+                M_RigidBody2D.velocity += Vector2.up * Physics2D.gravity.y * lowJumpMultilier * Time.deltaTime;
 
-        dirX = Input.GetAxis("Horizontal") * moveSpeed;
+            dirX = Input.GetAxis("Horizontal") * moveSpeed;
+
+            animator.SetFloat("speed", Mathf.Abs(dirX));
+        }
     }
 
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-            moveSpeed = 6f;
-        else if (Input.GetKeyUp(KeyCode.LeftShift))
-            moveSpeed = 3f;
-
-        if (Input.GetButtonDown("Jump"))
-            Jump();
-      
+        if (Input.GetKeyDown(KeyCode.Space))
+            Jumping = true;
+        else if (Input.GetKeyUp(KeyCode.Space))
+            Jumping = false;
     }
 
-    private void Move()
+    private void HandleMovement()
     {
-        m_rigidbody2D.velocity = new Vector2(dirX, m_rigidbody2D.velocity.y);
-    }
-
-    private void Jump()
-    {
-        m_rigidbody2D.velocity = Vector2.up * 6f;
+        if(Jumping && M_RigidBody2D.velocity.y == 0)
+        {
+            M_RigidBody2D.velocity = Vector2.up * 6f;
+            animator.SetTrigger("jump");
+        }
+            
+        if(!Attack && !Jumping && OnGround)
+            M_RigidBody2D.velocity = new Vector2(dirX, M_RigidBody2D.velocity.y);
     }
 
     private bool IsGrounded()
     {
-        if(m_rigidbody2D.velocity.y <= 0)
+        if(M_RigidBody2D.velocity.y <= 0)
             foreach(Transform point in groundPoints)
             {
                 Collider2D[] colliders = Physics2D.OverlapCircleAll(point.position, groundRadius, groundType);
@@ -92,5 +119,13 @@ public class Movement : MonoBehaviour
 
             transform.localScale = theScale;
         }
+    }
+
+    private void HandleLayers()
+    {
+        if (!OnGround)
+            animator.SetLayerWeight(1, 1);
+        else
+            animator.SetLayerWeight(1, 0);
     }
 }
