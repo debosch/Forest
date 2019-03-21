@@ -25,7 +25,6 @@ public abstract class Character : MonoBehaviour
         facingRight = true;
 }
 
-  
     void Update()
     {
         

@@ -1,17 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class PatrolState : MonoBehaviour
+
+public class PatrolState : IEnemyState
 {
-    // Start is called before the first frame update
-    void Start()
+    public void Enter(Character enemy)
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Execute()
+    {
+        Debug.Log("I'm patrolling");
+    }
+
+    public void Exit()
+    {
+        
+    }
+
+    public void OnCollisionEnter(Collider2D other)
     {
         
     }

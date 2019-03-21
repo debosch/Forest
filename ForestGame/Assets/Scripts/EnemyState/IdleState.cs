@@ -1,17 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class IdleState : MonoBehaviour
+public class IdleState : IEnemyState
 {
-    // Start is called before the first frame update
-    void Start()
+    public void Enter(Character enemy)
+    {
+       
+    }
+
+    public void Execute()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Exit()
+    {
+        
+    }
+
+    public void OnCollisionEnter(Collider2D other)
     {
         
     }
