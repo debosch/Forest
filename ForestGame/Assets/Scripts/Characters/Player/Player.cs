@@ -13,35 +13,59 @@ public class Player : Character
         }
     }
 
+    public int HealthPoints { get; set; }
+    
     public bool OnGround { get; set; }
     public bool Jumping { get; set; }
     public bool Attack { get; set; }
     public bool Walk { get; set; }
     public bool Dead { get; set; }
+    public bool Falling { get; set; }
+
 
     private float dirX;
 
-    private readonly float fallMultiplier = 1.5f;
-    private readonly float lowJumpMultilier = 1f;
+    private readonly float fallMultiplier = 1.3f;
+    private readonly float lowJumpMultilier = 2f;
+
+    [SerializeField]
+    private Transform startPos;
 
     override protected void Start()
     {
         base.Start();
+        animator.SetBool("dead", false);
         Dead = false;
+        transform.position = startPos.position;
     }
 
+    private void Awake()
+    {
+        HealthPoints = 3;
+    }
 
     private void FixedUpdate()
     {
-        OnGround = IsGrounded();
-        HandleMovement();
+        if(!Dead)
+        {
+            OnGround = IsGrounded();
+            HandleMovement();
+            if(!Attack)
+               Flip();
+        }
         HandleLayers();
-        if(!Attack)
-            Flip();
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+            HealthPoints--;
+
+        if (HealthPoints <= 0)
+        {
+            animator.SetBool("dead", true);
+        }        
+
         if(!Dead)
         {
             HandleInput();
@@ -53,13 +77,26 @@ public class Player : Character
 
             dirX = Input.GetAxis("Horizontal") * moveSpeed;
         }
+
+        if (OnGround)
+        {
+            Falling = false;
+            animator.SetBool("fall", false);
+        }
+
+        HandleBoundary();
     }
 
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !Attack)
+        if (Input.GetKeyDown(KeyCode.Space) && !Attack && OnGround && !Falling)
+        {
+            Jump();
             animator.SetTrigger("jump");
-        
+        }
+            
+
+
         if (Input.GetKey(KeyCode.LeftShift) && OnGround && !Attack)
             animator.SetTrigger("attack");
     }
@@ -69,20 +106,15 @@ public class Player : Character
         animator.SetFloat("speed", Mathf.Abs(dirX));
 
         if (RigidBody.velocity.y < 0)
-            animator.SetBool("fall",true);
-
-        if(Jumping && OnGround)
         {
-            RigidBody.AddForce(new Vector2(0, jumpForce));
-            animator.SetTrigger("jump");
+            animator.SetBool("fall", true);   
         }
-          
+            
+
         if(!Attack)
             RigidBody.velocity = new Vector2(dirX, RigidBody.velocity.y);
 
     }
-
-    
 
     private void Flip()
     {
@@ -99,4 +131,5 @@ public class Player : Character
         else
             animator.SetLayerWeight(1, 0);
     }
+
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IdleState : MonoBehaviour
+public class Skeleton : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
