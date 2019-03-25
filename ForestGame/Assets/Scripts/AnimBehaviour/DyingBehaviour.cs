@@ -1,12 +1,12 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
-public class JumpBehaviour : StateMachineBehaviour
+public class DyingBehaviour : StateMachineBehaviour
 {
-
+    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Player.Instance.Jumping = true;
+        Player.Instance.Dead = true;
+       // Player.Instance.RigidBody.velocity = new Vector2(0, -10);
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
@@ -16,12 +16,10 @@ public class JumpBehaviour : StateMachineBehaviour
     //}
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
-    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    {
-        animator.ResetTrigger("jump");
-        Player.Instance.Jumping = false;
-        Player.Instance.Falling = true;
-    }
+    //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    //{
+    //    
+    //}
 
     // OnStateMove is called right after Animator.OnAnimatorMove()
     //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

@@ -7,8 +7,9 @@ public abstract class Character : MonoBehaviour
 
     protected bool facingRight;
 
+
     protected readonly float groundCollisionRadius = 0.1f;
-    protected readonly float jumpForce = 600f;
+    protected readonly float jumpForce = 700f;
     protected readonly float moveSpeed = 7f;
 
     [SerializeField]
@@ -18,16 +19,13 @@ public abstract class Character : MonoBehaviour
 
     public Rigidbody2D RigidBody { get; set; }
 
+    private readonly float minX = -18.2f, maxY = 9.15f;
+
     protected virtual void Start()
     {
         animator = GetComponent<Animator>();
         RigidBody = GetComponent<Rigidbody2D>();
         facingRight = true;
-}
-
-    void Update()
-    {
-        
     }
 
     protected void ChangeDirection()
@@ -39,6 +37,12 @@ public abstract class Character : MonoBehaviour
             transform.localScale.z);
     }
 
+    protected void Jump()
+    {
+        RigidBody.AddForce(new Vector2(0, jumpForce));
+        animator.SetTrigger("jump");
+    }
+
     protected bool IsGrounded()
     {
         if (RigidBody.velocity.y <= 0)
@@ -48,11 +52,17 @@ public abstract class Character : MonoBehaviour
                 foreach (Collider2D collider in colliders)
                     if (collider.gameObject != gameObject)
                     {
-                        animator.SetBool("fall", false);
                         return true;
                     }
 
             }
         return false;
+    }
+
+    protected void HandleBoundary()
+    {
+        transform.position = new Vector2(
+            Mathf.Clamp(transform.position.x, minX, transform.position.x),
+            Mathf.Clamp(transform.position.y, transform.position.y, maxY));
     }
 }
